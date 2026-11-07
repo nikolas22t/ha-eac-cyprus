@@ -1,0 +1,112 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "EAC Cyprus",
+        "description": "Sign in with your account on the EAC meter-reading portal (meterreading-dso.eac.com.cy). Your smart meter must be registered there.",
+        "data": {
+          "email": "E-mail",
+          "password": "Password"
+        }
+      },
+      "service_point": {
+        "title": "Choose the supply",
+        "description": "Your account has more than one supply. Pick one (add the integration again for the others).",
+        "data": {
+          "service_point": "Supply (service point)"
+        }
+      },
+      "billing": {
+        "title": "Billing period",
+        "description": "Supply: {address}\n\nEAC bills every two months. Look at your last bill (e.g. \"24/07/2026 - 24/09/2026\") and enter the day and whether periods start in odd (Jan, Mar, May…) or even (Feb, Apr, Jun…) months.",
+        "data": {
+          "billing_day": "Billing period start day",
+          "billing_months": "Periods start in",
+          "tariff": "Tariff",
+          "fixed_fees": "Fixed fees per bill (excl. VAT)"
+        }
+      },
+      "reauth_confirm": {
+        "title": "Re-enter password",
+        "description": "The EAC portal rejected the password for {email}.",
+        "data": {
+          "password": "Password"
+        }
+      }
+    },
+    "error": {
+      "invalid_auth": "Wrong e-mail or password.",
+      "cannot_connect": "Cannot reach the EAC portal. Try again later.",
+      "no_service_points": "No supply is registered on this account."
+    },
+    "abort": {
+      "already_configured": "This supply is already configured.",
+      "reauth_successful": "Password updated."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Billing options",
+        "data": {
+          "billing_day": "Billing period start day",
+          "billing_months": "Periods start in",
+          "tariff": "Tariff",
+          "fixed_fees": "Fixed fees per bill (excl. VAT)"
+        }
+      }
+    }
+  },
+  "selector": {
+    "billing_months": {
+      "options": {
+        "odd": "Odd months (Jan, Mar, May, Jul, Sep, Nov)",
+        "even": "Even months (Feb, Apr, Jun, Aug, Oct, Dec)"
+      }
+    },
+    "tariff": {
+      "options": {
+        "01": "01 – Domestic",
+        "02": "02 – Domestic two-rate",
+        "08": "08 – Vulnerable groups"
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "bill_so_far": {
+        "name": "Bill so far"
+      },
+      "bill_projected": {
+        "name": "Bill projected"
+      },
+      "period_import": {
+        "name": "Imported this period"
+      },
+      "period_export": {
+        "name": "Exported this period"
+      },
+      "period_billable": {
+        "name": "Billable kWh this period"
+      },
+      "credit_in": {
+        "name": "Credit units carried in"
+      },
+      "last_day_import": {
+        "name": "Last day imported"
+      },
+      "last_day_export": {
+        "name": "Last day exported"
+      },
+      "import_price": {
+        "name": "Import price"
+      },
+      "export_credit": {
+        "name": "Export credit"
+      },
+      "data_until": {
+        "name": "Data available until"
+      }
+    }
+  }
+}
