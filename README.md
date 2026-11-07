@@ -52,7 +52,9 @@ Copy `custom_components/eac_cyprus` into your `config/custom_components/` folder
 
 1. Enter the e-mail and password of your EAC portal account.
 2. If the account has several supplies, pick one (add the integration again for each extra supply).
-3. Enter the billing cycle from your last bill. For example, a bill for **24/07/2026 – 24/09/2026** means start day **24**, periods starting in **odd** months.
+3. Enter the billing cycle from your last bill, using the **first** date of the period:
+   - "24/07/2026 – 24/09/2026" → day **24**, **odd** months (July)
+   - "03/08/2026 – 02/10/2026" → day **3**, **even** months (August), not 2
 
 You can change the billing settings later under *Configure*.
 
