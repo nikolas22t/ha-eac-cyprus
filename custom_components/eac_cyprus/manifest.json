@@ -1,13 +1,19 @@
 {
   "domain": "eac_cyprus",
   "name": "EAC Cyprus (Electricity Authority of Cyprus)",
-  "codeowners": ["@nikolas22t"],
+  "codeowners": [
+    "@nikolas22t"
+  ],
   "config_flow": true,
-  "dependencies": ["recorder"],
+  "dependencies": [
+    "recorder"
+  ],
   "documentation": "https://github.com/nikolas22t/ha-eac-cyprus",
   "integration_type": "service",
   "iot_class": "cloud_polling",
   "issue_tracker": "https://github.com/nikolas22t/ha-eac-cyprus/issues",
-  "requirements": ["openpyxl>=3.1.2"],
-  "version": "0.1.0"
+  "requirements": [
+    "openpyxl>=3.1.2"
+  ],
+  "version": "0.1.1"
 }

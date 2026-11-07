@@ -18,7 +18,7 @@
       },
       "billing": {
         "title": "Billing period",
-        "description": "Supply: {address}\n\nEAC bills every two months. Look at your last bill (e.g. \"24/07/2026 - 24/09/2026\") and enter the day and whether periods start in odd (Jan, Mar, May…) or even (Feb, Apr, Jun…) months.",
+        "description": "Supply: {address}\n\nEAC bills every two months. On your last bill, use the **first** date of the period: for \"03/08/2026 - 02/10/2026\" enter day **3** and **even** months (August); for \"24/07/2026 - 24/09/2026\" enter **24** and **odd** months (July).",
         "data": {
           "billing_day": "Billing period start day",
           "billing_months": "Periods start in",
