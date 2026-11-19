@@ -33,6 +33,19 @@ The bill estimate reproduces the EAC bill lines: electricity generation, fuel ad
 
 ## Dashboard card (built in)
 
+<img src="docs/screenshots/full.png" width="420" alt="EAC Cyprus card">
+
+<p>
+<img src="docs/screenshots/charts.png" width="100%">
+<img src="docs/screenshots/profile-bills.png" width="100%">
+</p>
+
+| Bill | Breakdown | Dark theme, Greek |
+|---|---|---|
+| ![bill](docs/screenshots/bill.png) | ![breakdown](docs/screenshots/breakdown.png) | <img src="docs/screenshots/full-dark-el.png" width="260"> |
+
+*Screenshots use synthetic sample data (`docs/demo.html`), not a real household.*
+
 The integration serves its own Lovelace card — no HACS frontend install needed:
 
 ```yaml

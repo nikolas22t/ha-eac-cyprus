@@ -1,0 +1,29 @@
+<!doctype html><html><head><meta charset="utf-8">
+<style>
+body{margin:0;padding:16px;font-family:Roboto,"Segoe UI",Helvetica,Arial,sans-serif;background:var(--primary-background-color);color:var(--primary-text-color)}
+:root{--primary-background-color:#f5f5f5;--card-background-color:#fff;--primary-text-color:#212121;--secondary-text-color:#727272;--divider-color:#e0e0e0;--primary-color:#03a9f4;--secondary-background-color:#f0f2f5}
+body.dark{--primary-background-color:#111;--card-background-color:#1c1c1c;--primary-text-color:#e1e1e1;--secondary-text-color:#9b9b9b;--divider-color:#333;--secondary-background-color:#262626}
+.grid{display:grid;grid-template-columns:repeat(var(--cols,1),1fr);gap:16px;align-items:start}
+</style>
+<script>
+customElements.define("ha-card",class extends HTMLElement{connectedCallback(){Object.assign(this.style,{display:"block",background:"var(--card-background-color)",borderRadius:"12px",border:"1px solid var(--divider-color)",color:"var(--primary-text-color)"})}});
+customElements.define("ha-icon",class extends HTMLElement{connectedCallback(){const m={"mdi:transmission-tower-import":"⬇","mdi:transmission-tower-export":"⬆","mdi:scale-balance":"⚖","mdi:battery-charging":"🔋","mdi:lightning-bolt":"⚡","mdi:clock-alert-outline":"⏰"};this.textContent=m[this.getAttribute("icon")]||"•";this.style.fontSize="18px"}});
+</script>
+<script src="../custom_components/eac_cyprus/frontend/eac-cyprus-card.js"></script>
+</head><body><div class="grid" id="g"></div>
+<script>
+// Generic, synthetic data (not a real household)
+let seed=7;const rnd=()=>((seed=(seed*16807)%2147483647)/2147483647);
+const daily=[],monthly=[];const today=new Date("2026-11-18T12:00");
+for(let i=61;i>=0;i--){const d=new Date(today);d.setDate(d.getDate()-i);const imp=9+rnd()*9+(d.getDay()%6==0?4:0);daily.push([d.toISOString().slice(0,10),+imp.toFixed(2),+(6+rnd()*9).toFixed(2)])}
+const seas=[1.4,1.25,1,0.8,0.75,1,1.35,1.45,1.15,0.85,0.9,1.2];
+for(let i=13;i>=0;i--){const d=new Date(2026,10-i,15);const s=seas[d.getMonth()];monthly.push([d.toISOString().slice(0,7),+(380*s+rnd()*40).toFixed(1),+(420/s*0.8+rnd()*40).toFixed(1)])}
+const profile=[...Array(24).keys()].map(h=>[h,+(0.25+(h>=18&&h<=22?0.6:0)+(h>=7&&h<=9?0.3:0)+rnd()*0.1).toFixed(3),+(h>=8&&h<=16?Math.sin((h-7)/10*Math.PI)*1.4:0).toFixed(3)]);
+const periods=[["2026-09-24","2026-11-23",0,0],["2026-07-24","2026-09-23",742,688],["2026-05-24","2026-07-23",801,512],["2026-03-24","2026-05-23",655,610],["2026-01-24","2026-03-23",910,380]].slice(1).map(([s,e,i,x],k)=>({start:s,end:e,import:i,export:x,credit_in:k==1?40:0,credit_out:0,billable:Math.max(0,i-x),total:+(9.39+i*0.0413+Math.max(0,i-x)*0.2717).toFixed(2)}));
+const bill={imported:612.4,exported:498.7,credit_in:0,credit_out:0,net:113.7,energy:20.34,fuel_adjustment:9.1,network:24.07,pso:0.31,fixed:8.94,vat:3.14,res_fund:0.57,total:66.47};
+const attrs={eac_cyprus_card:1,service_point:"000000000000",address:"Sample street 1, Nicosia",period_start:"2026-09-24",period_end:"2026-11-24",days_in_period:61,days_elapsed:56.5,data_until:"2026-11-19T09:00:00+02:00",lag_hours:9,stale:false,projected:72.15,import_price:0.3368,export_credit:0.2950,rates_live:true,fixed_fees:8.94,bill,rates:{},last_day:"2026-11-18",last_day_import:daily.at(-1)[1],last_day_export:daily.at(-1)[2],last_bill:periods[0],daily,monthly,periods,profile};
+const hass={language:new URLSearchParams(location.search).get("lang")||"en",states:{"sensor.eac_000000000000_overview":{entity_id:"sensor.eac_000000000000_overview",state:"66.47",attributes:attrs,last_updated:"x"}}};
+const q=new URLSearchParams(location.search);if(q.get("dark"))document.body.classList.add("dark");
+document.getElementById("g").style.setProperty("--cols",q.get("cols")||1);
+for(const v of (q.get("views")||"full").split(",")){const c=document.createElement("eac-cyprus-card");c.setConfig({view:v,...(v!=="full"&&v!=="bill"?{title:""}:{})});document.getElementById("g").appendChild(c);c.hass=hass}
+</script></body></html>
