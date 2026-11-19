@@ -30,6 +30,33 @@ On the first run it downloads about 13 months of history.
 
 The bill estimate reproduces the EAC bill lines: electricity generation, fuel adjustment, network use, public service obligation, fixed fees, VAT 5 % and the RES & EE fund. Prices come from the [Cyprus electricity cost API](https://electricity-calculator.cy/api/) and follow the monthly fuel adjustment.
 
+
+## Dashboard card (built in)
+
+The integration serves its own Lovelace card — no HACS frontend install needed:
+
+```yaml
+type: custom:eac-cyprus-card
+entity: sensor.eac_<supply>_overview   # optional, first EAC supply is used
+view: full    # full | bill | breakdown | daily | monthly | profile | periods
+days: 30      # daily chart
+months: 13    # monthly chart
+language: el  # optional, follows HA language (en/el)
+```
+
+Shows bill so far vs projected with period progress, imported/exported/billable kWh and credit units, a bill breakdown (energy, fuel adjustment, network, PSO, fees, VAT, RES), daily and monthly import/export bars, an average-day hourly profile and the estimated history of past bills.
+
+## Actions
+
+- `eac_cyprus.import_full_history` — download everything the portal has (up to 6 years) and rebuild the statistics from zero.
+- `eac_cyprus.refresh` — fetch now.
+
+## Options
+
+Billing day/months, tariff, fixed fees, polling interval, data-stale threshold and an optional **known credit units** anchor (bill start date + kWh carried in, as printed on a bill) so credit is chained exactly instead of assuming 0.
+
+Diagnostics: `Data lag`, `Last update`, `Data available until` and a `Data stale` problem binary sensor.
+
 ## Requirements
 
 - An EAC smart meter.

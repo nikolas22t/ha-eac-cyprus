@@ -35,3 +35,27 @@ def test_periods():
     assert p(datetime(2027, 1, 5, tzinfo=TZ), 3, "even")[0].date().isoformat() == "2026-12-03"
     s, e = p(datetime(2026, 12, 1, tzinfo=TZ), 24, "odd")
     assert (s.date().isoformat(), e.date().isoformat()) == ("2026-11-24", "2027-01-24")
+
+
+def test_aggregations_and_periods():
+    from datetime import timedelta
+    UTC = ZoneInfo("UTC")
+    start = datetime(2026, 5, 24, tzinfo=TZ)
+    imp, exp = {}, {}
+    h = start.astimezone(UTC)
+    while h < datetime(2026, 9, 24, tzinfo=TZ):
+        imp[h] = 1.0
+        exp[h] = 2.0 if 9 <= h.astimezone(TZ).hour < 15 else 0.0
+        h += timedelta(hours=1)
+    d = billing.daily_totals(imp, exp, TZ, 5)
+    assert len(d) == 5 and d[-1][1] == 24.0 and d[-1][2] == 12.0
+    m = billing.monthly_totals(imp, exp, TZ, 3)
+    assert [x[0] for x in m] == ["2026-07", "2026-08", "2026-09"]
+    p = billing.hourly_profile(imp, exp, TZ, datetime(2026, 9, 24, tzinfo=TZ), 30)
+    assert p[12][2] == 2.0 and p[3][2] == 0.0 and p[0][1] == 1.0
+    r = {"electricityGeneration": 0.1789, "networkUsage": 0.0393, "fuelAdjustment": 0.08,
+         "publicServiceObligation": 0.00051, "resEsFund": 0.005}
+    periods, credit = billing.period_history(imp, exp, 24, "odd", start, datetime(2026, 9, 24, tzinfo=TZ), 0, r, 8.94)
+    assert len(periods) == 2 and periods[0]["start"] == "2026-07-24" and periods[1]["start"] == "2026-05-24"
+    assert credit == 0  # 12 out vs 24 in per day: no credit
+    assert periods[1]["billable"] == periods[1]["import"] - periods[1]["export"]

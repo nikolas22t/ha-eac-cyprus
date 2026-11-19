@@ -98,6 +98,21 @@ SENSORS: tuple[EacSensorDescription, ...] = (
         value=lambda d: round(d.export_credit, 6),
     ),
     EacSensorDescription(
+        key="last_bill", translation_key="last_bill", native_unit_of_measurement=EUR,
+        device_class=SensorDeviceClass.MONETARY, suggested_display_precision=2,
+        value=lambda d: d.last_bill["total"] if d.last_bill else None,
+        attrs=lambda d: dict(d.last_bill or {}),
+    ),
+    EacSensorDescription(
+        key="data_lag", translation_key="data_lag", native_unit_of_measurement="h",
+        device_class=SensorDeviceClass.DURATION, entity_category=EntityCategory.DIAGNOSTIC,
+        suggested_display_precision=0, value=lambda d: d.lag_hours,
+    ),
+    EacSensorDescription(
+        key="last_update", translation_key="last_update", device_class=SensorDeviceClass.TIMESTAMP,
+        entity_category=EntityCategory.DIAGNOSTIC, value=lambda d: d.fetched_at,
+    ),
+    EacSensorDescription(
         key="data_until", translation_key="data_until", device_class=SensorDeviceClass.TIMESTAMP,
         entity_category=EntityCategory.DIAGNOSTIC, value=lambda d: d.data_until,
     ),
@@ -109,7 +124,19 @@ async def async_setup_entry(
 ) -> None:
     """Set up sensors."""
     coordinator = entry.runtime_data
-    async_add_entities(EacSensor(coordinator, desc) for desc in SENSORS)
+    async_add_entities([*(EacSensor(coordinator, desc) for desc in SENSORS), EacOverviewSensor(coordinator)])
+
+
+def device_info(coordinator: EacCoordinator) -> DeviceInfo:
+    """One device per supply."""
+    sp = coordinator.sp_id
+    return DeviceInfo(
+        identifiers={(DOMAIN, sp)},
+        name=f"EAC {sp}",
+        manufacturer="Electricity Authority of Cyprus",
+        model=coordinator.config_entry.data.get("address") or "Smart meter",
+        entry_type=DeviceEntryType.SERVICE,
+    )
 
 
 class EacSensor(CoordinatorEntity[EacCoordinator], SensorEntity):
@@ -121,15 +148,8 @@ class EacSensor(CoordinatorEntity[EacCoordinator], SensorEntity):
     def __init__(self, coordinator: EacCoordinator, desc: EacSensorDescription) -> None:
         super().__init__(coordinator)
         self.entity_description = desc
-        sp = coordinator.sp_id
-        self._attr_unique_id = f"{sp}_{desc.key}"
-        self._attr_device_info = DeviceInfo(
-            identifiers={(DOMAIN, sp)},
-            name=f"EAC {sp}",
-            manufacturer="Electricity Authority of Cyprus",
-            model=coordinator.config_entry.data.get("address") or "Smart meter",
-            entry_type=DeviceEntryType.SERVICE,
-        )
+        self._attr_unique_id = f"{coordinator.sp_id}_{desc.key}"
+        self._attr_device_info = device_info(coordinator)
 
     @property
     def native_value(self) -> Any:
@@ -139,3 +159,54 @@ class EacSensor(CoordinatorEntity[EacCoordinator], SensorEntity):
     def extra_state_attributes(self) -> dict[str, Any] | None:
         fn = self.entity_description.attrs
         return fn(self.coordinator.data) if fn else None
+
+
+class EacOverviewSensor(CoordinatorEntity[EacCoordinator], SensorEntity):
+    """Everything the eac-cyprus-card needs, as attributes (not written to the recorder)."""
+
+    _attr_has_entity_name = True
+    _attr_translation_key = "overview"
+    _attr_native_unit_of_measurement = EUR
+    _attr_device_class = SensorDeviceClass.MONETARY
+    _attr_suggested_display_precision = 2
+    _unrecorded_attributes = frozenset({"daily", "monthly", "periods", "profile", "bill", "rates", "last_bill"})
+
+    def __init__(self, coordinator: EacCoordinator) -> None:
+        super().__init__(coordinator)
+        self._attr_unique_id = f"{coordinator.sp_id}_overview"
+        self._attr_device_info = device_info(coordinator)
+
+    @property
+    def native_value(self) -> float:
+        return round(self.coordinator.data.bill.total, 2)
+
+    @property
+    def extra_state_attributes(self) -> dict[str, Any]:
+        d = self.coordinator.data
+        return {
+            "eac_cyprus_card": 1,
+            "service_point": self.coordinator.sp_id,
+            "address": self.coordinator.config_entry.data.get("address"),
+            "period_start": d.period_start.date().isoformat(),
+            "period_end": (d.period_end.date()).isoformat(),
+            "days_in_period": d.days_in_period,
+            "days_elapsed": d.days_elapsed,
+            "data_until": d.data_until.isoformat() if d.data_until else None,
+            "lag_hours": d.lag_hours,
+            "stale": d.stale,
+            "projected": round(d.projected_total, 2),
+            "import_price": round(d.import_price, 4),
+            "export_credit": round(d.export_credit, 4),
+            "rates_live": d.rates_live,
+            "fixed_fees": d.fixed_fees,
+            "bill": {k: round(v, 2) for k, v in asdict(d.bill).items()},
+            "rates": d.rates,
+            "last_day": d.last_day,
+            "last_day_import": d.last_day_import,
+            "last_day_export": d.last_day_export,
+            "last_bill": d.last_bill,
+            "daily": d.daily,
+            "monthly": d.monthly,
+            "periods": d.periods,
+            "profile": d.profile,
+        }

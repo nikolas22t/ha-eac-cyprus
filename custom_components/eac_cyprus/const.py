@@ -13,6 +13,18 @@ CONF_BILLING_DAY = "billing_day"
 CONF_BILLING_MONTHS = "billing_months"  # "odd" or "even": months in which a billing period starts
 CONF_TARIFF = "tariff"
 CONF_FIXED_FEES = "fixed_fees"
+CONF_SCAN_HOURS = "scan_hours"
+CONF_STALE_DAYS = "stale_days"
+CONF_CREDIT_DATE = "credit_anchor_date"  # start date of a bill whose carried-in credit is known
+CONF_CREDIT_KWH = "credit_anchor_kwh"
+
+DEFAULT_SCAN_HOURS = 6
+DEFAULT_STALE_DAYS = 4
+DAILY_DAYS = 62
+MONTHS_KEPT = 25
+PROFILE_DAYS = 30
+FULL_HISTORY_YEARS = 6
+CARD_URL = "/eac_cyprus/eac-cyprus-card.js"
 
 DEFAULT_BILLING_DAY = 24
 DEFAULT_BILLING_MONTHS = "odd"

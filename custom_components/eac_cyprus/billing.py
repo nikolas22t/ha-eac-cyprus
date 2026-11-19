@@ -88,3 +88,65 @@ def carried_credit(imported: dict[datetime, float], exported: dict[datetime, flo
         credit = max(0.0, credit + sum_between(exported, x, nxt) - sum_between(imported, x, nxt))
         x = nxt
     return credit
+
+
+# ---------------------------------------------------------------- aggregations for cards
+
+def daily_totals(imported: dict[datetime, float], exported: dict[datetime, float], tz, days: int) -> list[list]:
+    """[[YYYY-MM-DD, import, export], ...] for the last `days` days that have data (local dates)."""
+    out: dict[str, list[float]] = {}
+    for src, idx in ((imported, 0), (exported, 1)):
+        for h, v in src.items():
+            d = h.astimezone(tz).date().isoformat()
+            out.setdefault(d, [0.0, 0.0])[idx] += v
+    keys = sorted(out)[-days:]
+    return [[k, round(out[k][0], 2), round(out[k][1], 2)] for k in keys]
+
+
+def monthly_totals(imported: dict[datetime, float], exported: dict[datetime, float], tz, months: int) -> list[list]:
+    """[[YYYY-MM, import, export], ...] for the last `months` calendar months."""
+    out: dict[str, list[float]] = {}
+    for src, idx in ((imported, 0), (exported, 1)):
+        for h, v in src.items():
+            m = h.astimezone(tz).strftime("%Y-%m")
+            out.setdefault(m, [0.0, 0.0])[idx] += v
+    keys = sorted(out)[-months:]
+    return [[k, round(out[k][0], 1), round(out[k][1], 1)] for k in keys]
+
+
+def hourly_profile(imported: dict[datetime, float], exported: dict[datetime, float], tz,
+                   end: datetime, days: int) -> list[list]:
+    """Average kWh per local hour-of-day over the `days` days before `end`: [[hour, import, export] x24]."""
+    start = end - timedelta(days=days)
+    acc = [[0.0, 0.0] for _ in range(24)]
+    seen: set = set()
+    for src, idx in ((imported, 0), (exported, 1)):
+        for h, v in src.items():
+            if start <= h < end:
+                loc = h.astimezone(tz)
+                acc[loc.hour][idx] += v
+                seen.add(loc.date())
+    n = max(1, len(seen))
+    return [[i, round(a / n, 3), round(b / n, 3)] for i, (a, b) in enumerate(acc)]
+
+
+def period_history(imported: dict[datetime, float], exported: dict[datetime, float], day: int, months: str,
+                   first_start: datetime, current_start: datetime, credit0: float,
+                   rates: dict[str, float], fixed_fees: float) -> tuple[list[dict], float]:
+    """Estimate every complete billing period from first_start up to current_start.
+
+    Returns (periods newest-first, credit carried into the current period).
+    """
+    out: list[dict] = []
+    credit = credit0
+    x = first_start
+    while x < current_start:
+        _, nxt = billing_period(x + timedelta(hours=12), day, months)
+        imp, exp = sum_between(imported, x, nxt), sum_between(exported, x, nxt)
+        b = estimate(imp, exp, credit, rates, fixed_fees)
+        out.append({"start": x.date().isoformat(), "end": (nxt - timedelta(days=1)).date().isoformat(),
+                    "import": round(imp, 1), "export": round(exp, 1), "credit_in": round(credit, 1),
+                    "credit_out": round(b.credit_out, 1), "billable": round(b.net, 1), "total": round(b.total, 2)})
+        credit = b.credit_out
+        x = nxt
+    return out[::-1], credit

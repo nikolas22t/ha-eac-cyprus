@@ -1,0 +1,19 @@
+{
+  "services": {
+    "import_full_history": {"service": "mdi:database-import"},
+    "refresh": {"service": "mdi:refresh"}
+  },
+  "entity": {
+    "sensor": {
+      "bill_so_far": {"default": "mdi:receipt-text"},
+      "bill_projected": {"default": "mdi:receipt-text-clock"},
+      "last_bill": {"default": "mdi:receipt-text-check"},
+      "credit_in": {"default": "mdi:battery-charging"},
+      "import_price": {"default": "mdi:cash-plus"},
+      "export_credit": {"default": "mdi:cash-minus"},
+      "data_lag": {"default": "mdi:timer-sand"},
+      "overview": {"default": "mdi:chart-bar"}
+    },
+    "binary_sensor": {"data_stale": {"default": "mdi:clock-alert-outline"}}
+  }
+}

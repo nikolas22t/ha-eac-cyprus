@@ -47,12 +47,20 @@
   "options": {
     "step": {
       "init": {
-        "title": "Billing options",
+        "title": "EAC Cyprus options",
         "data": {
           "billing_day": "Billing period start day",
           "billing_months": "Periods start in",
           "tariff": "Tariff",
-          "fixed_fees": "Fixed fees per bill (excl. VAT)"
+          "fixed_fees": "Fixed fees per bill (excl. VAT)",
+          "scan_hours": "Polling interval",
+          "stale_days": "Data-stale threshold",
+          "credit_anchor_date": "Known credit: bill start date",
+          "credit_anchor_kwh": "Known credit: kWh carried into that bill"
+        },
+        "data_description": {
+          "credit_anchor_date": "Optional. First date of a bill on which you know the credit units carried in (shown on the bill). Leave empty to assume 0 at the oldest downloaded bill.",
+          "scan_hours": "EAC publishes readings about a day late, so every few hours is enough."
         }
       }
     }
@@ -106,7 +114,34 @@
       },
       "data_until": {
         "name": "Data available until"
+      },
+      "last_bill": {
+        "name": "Last bill (estimated)"
+      },
+      "data_lag": {
+        "name": "Data lag"
+      },
+      "last_update": {
+        "name": "Last update"
+      },
+      "overview": {
+        "name": "Overview"
       }
+    },
+    "binary_sensor": {
+      "data_stale": {
+        "name": "Data stale"
+      }
+    }
+  },
+  "services": {
+    "import_full_history": {
+      "name": "Import full history",
+      "description": "Download every reading the EAC portal has (up to 6 years) and rebuild the Energy statistics."
+    },
+    "refresh": {
+      "name": "Refresh now",
+      "description": "Fetch the latest readings from the EAC portal."
     }
   }
 }

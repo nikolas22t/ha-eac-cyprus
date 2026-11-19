@@ -83,11 +83,11 @@ class EacClient:
             data = await resp.json(content_type=None)
         return [ServicePoint(sp["id"], sp.get("address", ""), sp.get("serialNumber")) for sp in data]
 
-    async def download_xlsx(self, sp_id: str, days: int) -> bytes:
-        """Download the 'readings & consumption' report (XLSX) for the last `days` days."""
+    async def download_xlsx(self, sp_id: str, days: int, until: datetime | None = None) -> bytes:
+        """Download the 'readings & consumption' report (XLSX) for `days` days ending `until` (default now)."""
         if not self._jwt:
             await self.login()
-        now = datetime.now(TZ).replace(hour=12, minute=0, second=0, microsecond=0)
+        now = (until or datetime.now(TZ)).replace(hour=12, minute=0, second=0, microsecond=0)
 
         def iso(d: datetime) -> str:
             return d.astimezone(UTC).strftime("%Y-%m-%dT%H:%M:%S.000Z")

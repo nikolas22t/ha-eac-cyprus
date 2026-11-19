@@ -15,6 +15,7 @@ from homeassistant.helpers.selector import (
     NumberSelector,
     NumberSelectorConfig,
     NumberSelectorMode,
+    DateSelector,
     SelectSelector,
     SelectSelectorConfig,
 )
@@ -23,12 +24,18 @@ from .api import EacAuthError, EacClient, EacError, ServicePoint
 from .const import (
     CONF_BILLING_DAY,
     CONF_BILLING_MONTHS,
+    CONF_CREDIT_DATE,
+    CONF_CREDIT_KWH,
     CONF_FIXED_FEES,
+    CONF_SCAN_HOURS,
+    CONF_STALE_DAYS,
     CONF_SERVICE_POINT,
     CONF_TARIFF,
     DEFAULT_BILLING_DAY,
     DEFAULT_BILLING_MONTHS,
     DEFAULT_FIXED_FEES,
+    DEFAULT_SCAN_HOURS,
+    DEFAULT_STALE_DAYS,
     DEFAULT_TARIFF,
     DOMAIN,
 )
@@ -54,6 +61,23 @@ def billing_schema(defaults: Mapping[str, Any]) -> vol.Schema:
             ),
         }
     )
+
+
+def options_schema(o: Mapping[str, Any]) -> vol.Schema:
+    """Billing options plus polling, staleness and the known credit-units anchor."""
+    extra = {
+        vol.Required(CONF_SCAN_HOURS, default=o.get(CONF_SCAN_HOURS, DEFAULT_SCAN_HOURS)): NumberSelector(
+            NumberSelectorConfig(min=1, max=24, step=1, mode=NumberSelectorMode.BOX, unit_of_measurement="h")
+        ),
+        vol.Required(CONF_STALE_DAYS, default=o.get(CONF_STALE_DAYS, DEFAULT_STALE_DAYS)): NumberSelector(
+            NumberSelectorConfig(min=1, max=30, step=1, mode=NumberSelectorMode.BOX, unit_of_measurement="d")
+        ),
+        vol.Optional(CONF_CREDIT_DATE, description={"suggested_value": o.get(CONF_CREDIT_DATE)}): DateSelector(),
+        vol.Optional(CONF_CREDIT_KWH, default=o.get(CONF_CREDIT_KWH, 0)): NumberSelector(
+            NumberSelectorConfig(min=0, max=100000, step=1, mode=NumberSelectorMode.BOX, unit_of_measurement="kWh")
+        ),
+    }
+    return billing_schema(o).extend(extra)
 
 
 async def _login(hass, email: str, password: str) -> list[ServicePoint]:
@@ -151,4 +175,4 @@ class EacOptionsFlow(OptionsFlow):
     async def async_step_init(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
         if user_input is not None:
             return self.async_create_entry(data=user_input)
-        return self.async_show_form(step_id="init", data_schema=billing_schema(self.config_entry.options))
+        return self.async_show_form(step_id="init", data_schema=options_schema(self.config_entry.options))

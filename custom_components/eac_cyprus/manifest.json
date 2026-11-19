@@ -6,7 +6,9 @@
   ],
   "config_flow": true,
   "dependencies": [
-    "recorder"
+    "recorder",
+    "http",
+    "frontend"
   ],
   "documentation": "https://github.com/nikolas22t/ha-eac-cyprus",
   "integration_type": "service",
@@ -15,5 +17,5 @@
   "requirements": [
     "openpyxl>=3.1.2"
   ],
-  "version": "0.1.1"
+  "version": "0.2.0"
 }
